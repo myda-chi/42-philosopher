@@ -6,67 +6,56 @@
 /*   By: myda-chi <myda-chi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/28 15:06:38 by myda-chi          #+#    #+#             */
-/*   Updated: 2025/06/28 19:37:32 by myda-chi         ###   ########.fr       */
+/*   Updated: 2025/06/29 12:36:05 by myda-chi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-static bool init_forks(t_data *data)
+bool	ft_initialize_args(t_args *args, char **argv)
 {
-    int i;
-
-    data->forks = malloc(sizeof(pthread_mutex_t) * data->nb_philo);
-    if (!data->forks)
-        return (false);
-    i = 0;
-    while (i < data->nb_philo)
-    {
-        if (pthread_mutex_init(&data->forks[i], NULL) != 0)
-            return (false);
-        i++;
-    }
-    return (true);
+	if (!error_handler(argv))
+		return (false);
+	args->philo_count = ft_atoi(argv[1]);
+	args->time2die = ft_atoi(argv[2]);
+	args->time2eat = ft_atoi(argv[3]);
+	args->time2sleep = ft_atoi(argv[4]);
+	if (argv[5])
+		args->max_meals = ft_atoi(argv[5]);
+	else
+		args->max_meals = -1;
+	pthread_mutex_init(&args->sync_mutex, NULL);
+	args->start_time = ft_now_ms();
+	args->philos = malloc(sizeof(t_philo) * args->philo_count);
+	if (!args->philos)
+		return (false);
+	return (true);
 }
 
-static bool init_philos(t_data *data)
+void	ft_initialize_philos(t_args *args)
 {
-    int i;
+	int	i;
 
-    data->philos = malloc(sizeof(t_philo) * data->nb_philo);
-    if (!data->philos)
-        return (false);
-    i = 0;
-    while (i < data->nb_philo)
-    {
-        data->philos[i].id = i + 1;
-        data->philos[i].l_fork = &data->forks[i];
-        data->philos[i].r_fork = &data->forks[(i + 1) % data->nb_philo];
-        data->philos[i].last_meal = data->start_time;
-        data->philos[i].meals_eaten = 0;
-        data->philos[i].data = data;
-        i++;
-    }
-    return (true);
+	i = -1;
+	while (++i < args->philo_count)
+	{
+		args->philos[i].nbr = i + 1;
+		args->philos[i].last_meal_beginning = args->start_time;
+		pthread_mutex_init(&args->philos[i].l_fork, NULL);
+		if (i + 1 == args->philo_count)
+			args->philos[i].r_fork = &args->philos[0].l_fork;
+		else
+			args->philos[i].r_fork = &args->philos[i + 1].l_fork;
+		args->philos[i].args = args;
+	}
 }
 
-bool    init_data(t_data *data, int ac, char **av)
+void	ft_cleanup(t_args *args)
 {
-    data->nb_philo = ft_atoi(av[1]);
-    data->time_to_die = ft_atoi(av[2]);
-    data->time_to_eat = ft_atoi(av[3]);
-    data->time_to_sleep = ft_atoi(av[4]);
-    data->nb_meals = -1;
-    if (ac == 6)
-        data->nb_meals = ft_atoi(av[5]);
-    data->someone_died = 0;
-    data->start_time = get_time_ms();
-    if (!init_forks(data))
-        return (false);
-    if (pthread_mutex_init(&data->print_mutex, NULL) != 0
-        || pthread_mutex_init(&data->death_mutex, NULL) != 0)
-        return (false);
-    if (!init_philos(data))
-        return (false);
-    return (true);
+	if (args->philos)
+	{
+		free(args->philos);
+		args->philos = NULL;
+	}
+	pthread_mutex_destroy(&args->sync_mutex);
 }

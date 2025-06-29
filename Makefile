@@ -1,15 +1,11 @@
 NAME =philo
 CC = cc
 CFLAGS = -Wall -Wextra -Werror
-LIBFT_DIR = libft
-LIBFT = $(LIBFT_DIR)/libft.a
-
-SRCS = handlers.c helpers.c init.c main.c monitor.c routine.c 
+SRCS = handlers.c helpers.c init.c main.c monitor.c routine.c philo_state.c
 
 OBJS = $(SRCS:.c=.o)
 
 all: $(NAME)
-
 
 $(NAME): $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)

@@ -6,72 +6,90 @@
 /*   By: myda-chi <myda-chi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/28 15:06:38 by myda-chi          #+#    #+#             */
-/*   Updated: 2025/06/28 19:48:13 by myda-chi         ###   ########.fr       */
+/*   Updated: 2025/06/29 12:34:02 by myda-chi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-void    print_status(t_philo *philo, char *status)
+void	ft_eat(t_philo *philo)
 {
-    pthread_mutex_lock(&philo->data->print_mutex);
-    printf("%ld %d %s\n", get_time_ms() - philo->data->start_time,
-        philo->id, status);
-    pthread_mutex_unlock(&philo->data->print_mutex);
+	if (!ft_write_status(philo, "is eating 🍽️ 😋"))
+		return ;
+	pthread_mutex_lock(&philo->args->sync_mutex);
+	philo->meals_count++;
+	philo->last_meal_beginning = ft_now_ms();
+	if (philo->meals_count == philo->args->max_meals)
+	{
+		philo->args->total_finished++;
+		if (philo->args->total_finished == philo->args->philo_count)
+			philo->args->all_full = true;
+	}
+	pthread_mutex_unlock(&philo->args->sync_mutex);
+	ft_usleep(philo->args->time2eat, philo);
+	release_forks(philo);
 }
 
-static void    take_forks(t_philo *philo)
+bool	sleep_then_think(t_philo *philo)
 {
-    if (philo->id % 2 == 0)
-    {
-        pthread_mutex_lock(philo->r_fork);
-        print_status(philo, "has taken a fork");
-        pthread_mutex_lock(philo->l_fork);
-        print_status(philo, "has taken a fork");
-    }
-    else
-    {
-        pthread_mutex_lock(philo->l_fork);
-        print_status(philo, "has taken a fork");
-        pthread_mutex_lock(philo->r_fork);
-        print_status(philo, "has taken a fork");
-    }
+	if (!ft_write_status(philo, "is sleeping 😴"))
+		return (false);
+	ft_usleep(philo->args->time2sleep, philo);
+	if (!ft_write_status(philo, "is thinking 🧠🤔"))
+		return (false);
+	return (true);
 }
 
-static void    release_forks(t_philo *philo)
+void	*ph_routine(void *data)
 {
-    pthread_mutex_unlock(philo->l_fork);
-    pthread_mutex_unlock(philo->r_fork);
+	t_philo	*philo;
+
+	philo = (t_philo *)data;
+	if (philo->args->philo_count == 1)
+	{
+		printf("%ld %d has taken a fork\n", ft_now_ms()
+			- philo->args->start_time, philo->nbr);
+		ft_usleep(philo->args->time2die, philo);
+		printf("%ld %d died\n", ft_now_ms() - philo->args->start_time,
+			philo->nbr);
+		return (NULL);
+	}
+	if (philo->nbr % 2 == 0)
+		ft_usleep(100, philo);
+	while (1)
+	{
+		if (!pick_forks(philo))
+			break ;
+		ft_eat(philo);
+		if (!sleep_then_think(philo))
+			break ;
+	}
+	return (NULL);
 }
 
-void    eat(t_philo *philo)
-{
-    take_forks(philo);
-    print_status(philo, "is eating");
-    philo->last_meal = get_time_ms();
-    usleep(philo->data->time_to_eat * 1000);
-    philo->meals_eaten++;
-    release_forks(philo);
-}
+// void	*ph_routine(void *data)
+// {
+// 	t_philo	*philo;
 
-void    *philo_routine(void *arg)
-{
-    t_philo *philo;
-
-    philo = (t_philo *)arg;
-    while (1)
-    {
-        pthread_mutex_lock(&philo->data->death_mutex);
-        if (philo->data->someone_died)
-        {
-            pthread_mutex_unlock(&philo->data->death_mutex);
-            break ;
-        }
-        pthread_mutex_unlock(&philo->data->death_mutex);
-        eat(philo);
-        print_status(philo, "is sleeping");
-        usleep(philo->data->time_to_sleep * 1000);
-        print_status(philo, "is thinking");
-    }
-    return (NULL);
-}
+// 	philo = (t_philo *)data;
+// 	if (philo->args->philo_count == 1)
+// 	{
+// 		printf("%ld %d has taken a fork\n",
+// 			ft_now_ms() - philo->args->start_time, philo->nbr);
+// 		ft_usleep(philo->args->time2die, philo);
+// 		printf("%ld %d died\n",
+// 			ft_now_ms() - philo->args->start_time, philo->nbr);
+// 		return (NULL);
+// 	}
+// 	if (!(philo->nbr & 1))
+// 		ft_usleep(100, philo);
+// 	while (1)
+// 	{
+// 		if (!pick_forks(philo))
+// 			break ;
+// 		ft_eat(philo);
+// 		if (!sleep_then_think(philo))
+// 			break ;
+// 	}
+// 	return (NULL);
+// }
