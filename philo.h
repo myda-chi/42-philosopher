@@ -6,7 +6,7 @@
 /*   By: myda-chi <myda-chi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 17:44:53 by myda-chi          #+#    #+#             */
-/*   Updated: 2025/07/24 19:15:30 by myda-chi         ###   ########.fr       */
+/*   Updated: 2025/08/03 16:02:33 by myda-chi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ typedef struct s_data
 	int				*forks;
 	pthread_mutex_t	print_mutex;
 	pthread_mutex_t	death_mutex;
+	pthread_mutex_t	meal_mutex;
 	long			start_time;
 	int				nb_philo;
 	int				time_to_die;
@@ -60,7 +61,8 @@ bool				init_data(t_data *data, int ac, char **av);
 void				cleanup_data(t_data *data);
 
 // routine.c
-void				print_status(t_philo *philo, char *status);
+void				print_status(t_philo *philo, const char *status);
+void				print_death(t_philo *philo);
 void				eat(t_philo *philo);
 void				*philo_routine(void *arg);
 

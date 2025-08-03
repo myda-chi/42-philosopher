@@ -6,7 +6,7 @@
 /*   By: myda-chi <myda-chi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/28 15:06:38 by myda-chi          #+#    #+#             */
-/*   Updated: 2025/07/24 19:12:42 by myda-chi         ###   ########.fr       */
+/*   Updated: 2025/08/03 16:03:14 by myda-chi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,6 +80,7 @@ void	cleanup_data(t_data *data)
 	}
 	pthread_mutex_destroy(&data->print_mutex);
 	pthread_mutex_destroy(&data->death_mutex);
+	pthread_mutex_destroy(&data->meal_mutex);
 }
 
 bool	init_data(t_data *data, int ac, char **av)
@@ -102,7 +103,8 @@ bool	init_data(t_data *data, int ac, char **av)
 		return (false);
 	}
 	if (pthread_mutex_init(&data->print_mutex, NULL) != 0
-		|| pthread_mutex_init(&data->death_mutex, NULL) != 0)
+		|| pthread_mutex_init(&data->death_mutex, NULL) != 0
+		|| pthread_mutex_init(&data->meal_mutex, NULL) != 0)
 	{
 		return (cleanup_data(data), false);
 	}

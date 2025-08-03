@@ -6,7 +6,7 @@
 /*   By: myda-chi <myda-chi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/28 14:59:42 by myda-chi          #+#    #+#             */
-/*   Updated: 2025/07/24 19:14:22 by myda-chi         ###   ########.fr       */
+/*   Updated: 2025/08/03 16:04:09 by myda-chi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,19 +36,24 @@ long	get_time_ms(void)
 	return (tv.tv_sec * 1000L + tv.tv_usec / 1000L);
 }
 
-void	print_status(t_philo *philo, char *status)
+void print_status(t_philo *philo, const char *msg)
 {
-	long	timestamp;
+    pthread_mutex_lock(&philo->data->death_mutex);
+    int dead = philo->data->someone_died;
+    pthread_mutex_unlock(&philo->data->death_mutex);
+    if (!dead)
+    {
+        pthread_mutex_lock(&philo->data->print_mutex);
+        long now = get_time_ms() - philo->data->start_time;
+        printf("%ld %d %s\n", now, philo->id, msg);
+        pthread_mutex_unlock(&philo->data->print_mutex);
+    }
+}
 
-	pthread_mutex_lock(&philo->data->death_mutex);
-	if (philo->data->someone_died)
-	{
-		pthread_mutex_unlock(&philo->data->death_mutex);
-		return ;
-	}
-	pthread_mutex_unlock(&philo->data->death_mutex);
-	pthread_mutex_lock(&philo->data->print_mutex);
-	timestamp = get_time_ms() - philo->data->start_time;
-	printf("%ld %d %s\n", timestamp, philo->id, status);
-	pthread_mutex_unlock(&philo->data->print_mutex);
+void print_death(t_philo *philo)
+{
+    pthread_mutex_lock(&philo->data->print_mutex);
+    long now = get_time_ms() - philo->data->start_time;
+    printf("\033[0;31m%ld %d died\033[0m\n", now, philo->id);
+    pthread_mutex_unlock(&philo->data->print_mutex);
 }

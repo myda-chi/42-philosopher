@@ -1,8 +1,6 @@
 NAME =philo
 CC = cc
 CFLAGS = -Wall -Wextra -Werror
-LIBFT_DIR = libft
-LIBFT = $(LIBFT_DIR)/libft.a
 
 SRCS = handlers.c helpers.c init.c main.c monitor.c routine.c
 

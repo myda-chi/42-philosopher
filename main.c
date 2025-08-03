@@ -6,7 +6,7 @@
 /*   By: myda-chi <myda-chi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 17:59:27 by myda-chi          #+#    #+#             */
-/*   Updated: 2025/07/24 19:07:25 by myda-chi         ###   ########.fr       */
+/*   Updated: 2025/08/03 16:02:57 by myda-chi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,6 @@ static bool	start_simulation(t_data *data)
 	int			i;
 	pthread_t	monitor_thread;
 
-	if (pthread_create(&monitor_thread, NULL, monitor_routine, data) != 0)
-		return (false);
 	i = 0;
 	while (i < data->nb_philo)
 	{
@@ -27,6 +25,8 @@ static bool	start_simulation(t_data *data)
 			return (false);
 		i++;
 	}
+	if (pthread_create(&monitor_thread, NULL, monitor_routine, data) != 0)
+		return (false);
 	i = 0;
 	while (i < data->nb_philo)
 	{
